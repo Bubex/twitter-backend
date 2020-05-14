@@ -1,4 +1,5 @@
 node_modules
 .env
 tmp/uploads/*
-!tmp/uploads/.gitkeep
+!tmp/uploads/default-cover.jpg
+!tmp/uploads/default-user.png

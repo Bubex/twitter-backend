@@ -37,10 +37,12 @@ const UserSchema = new mongoose.Schema({
     avatar: {
         type: String,
         require: false,
+        default: 'https://bubex-twitter-backend.herokuapp.com/images/default-user.png'
     },
     cover: {
         type: String,
         require: false,
+        default: 'https://bubex-twitter-backend.herokuapp.com/images/default-cover.jpg'
     },
     following: [{
         type: mongoose.Schema.Types.ObjectId,

@@ -65,7 +65,10 @@ module.exports = {
             } else if( usernameExists ) {
                 return res.json({ error: 'This username already exists.' });
             } else {
-                const user = await User.create({ username, name, email, password });
+                const user = await User.create({ 
+                    username, name, email, password
+                });
+                
                 return res.json({
                     user,
                     token: generateToken({ id: user._id })
