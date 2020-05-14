@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -12,7 +14,7 @@ const server = http.Server(app);
 
 setupWebSocket(server);
 
-mongoose.connect('mongodb+srv://tester:sucesso2020@cluster0-rcyph.mongodb.net/test?retryWrites=true&w=majority', {
+mongoose.connect(process.env.MONGO_URL, {
     useFindAndModify: false,
     useNewUrlParser: true,
     useUnifiedTopology: true,
