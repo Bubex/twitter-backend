@@ -103,7 +103,7 @@ module.exports = {
 
     async sendImage(req, res) {
         const { filename: path } = req.file;
-        const fullLink = `${process.env.APP_URL}/tmp/uploads/${path}`;
+        const fullLink = `${process.env.APP_URL}tmp/uploads/${path}`;
         return res.json({ path: fullLink });
     },
 
