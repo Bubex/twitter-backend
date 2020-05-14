@@ -103,7 +103,7 @@ module.exports = {
 
     async sendImage(req, res) {
         const { filename: path } = req.file;
-        const fullLink = `http://localhost:3333/images/${path}`;
+        const fullLink = `${process.env.APP_URL}${path}`;
         return res.json({ path: fullLink });
     },
 
