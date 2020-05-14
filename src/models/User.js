@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const isImageUrl = require('is-image-url');
 
 const UserSchema = new mongoose.Schema({
     username:{
@@ -67,6 +68,14 @@ UserSchema.pre('save', async function(next) {
     const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
     next();
+});
+
+// VALIDATING IMAGE URL ON SELECT
+UserSchema.post(/^find/, async function(next) {
+    const avatar = isImageUrl(this.avatar) ? this.avatar : `${process.env.APP_URL}images/default-avatar.png`;
+    const cover = isImageUrl(this.cover) ? this.cover : `${process.env.APP_URL}images/default-cover.jpg`;
+    this.avatar = avatar;
+    this.cover = cover;
 });
 
 module.exports = mongoose.model('User', UserSchema);
