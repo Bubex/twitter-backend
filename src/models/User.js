@@ -38,12 +38,12 @@ const UserSchema = new mongoose.Schema({
     avatar: {
         type: String,
         require: false,
-        default: `${process.env.APP_URL}/images/default-avatar.png`
+        default: `${process.env.APP_URL}images/default-avatar.png`
     },
     cover: {
         type: String,
         require: false,
-        default: `${process.env.APP_URL}/images/default-cover.jpg`
+        default: `${process.env.APP_URL}images/default-cover.jpg`
     },
     following: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -68,8 +68,8 @@ UserSchema.pre('save', async function(next) {
     const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
 
-    this.avatar = await isImageUrl(this.avatar) ? this.avatar : `${process.env.APP_URL}/images/default-avatar.png`;
-    this.cover = await isImageUrl(this.cover) ? this.cover : `${process.env.APP_URL}/images/default-cover.jpg`;
+    this.avatar = await isImageUrl(this.avatar) ? this.avatar : `${process.env.APP_URL}images/default-avatar.png`;
+    this.cover = await isImageUrl(this.cover) ? this.cover : `${process.env.APP_URL}images/default-cover.jpg`;
 
     next();
 });
