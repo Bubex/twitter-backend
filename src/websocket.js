@@ -1,6 +1,5 @@
 const socketio = require('socket.io');
 
-// 
 const connections = [];
 let io;
 

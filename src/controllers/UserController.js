@@ -97,7 +97,7 @@ module.exports = {
             sendMessage(sendSocketMessageTo, 'update-profile', await utils.getProfile(username));
 
             const sendSocketMessageTo2 = findMe();
-            sendMessage(sendSocketMessageTo2, 'update-me', await utils.getMe(user._id));
+            sendMessage(sendSocketMessageTo2, 'update-me', await utils.getMe(req.userId));
 
             return res.json({ success: 'Now you are following him!'});
         } catch (err) {

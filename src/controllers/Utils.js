@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const authConfig = require('../config/auth');
@@ -90,10 +92,18 @@ module.exports = {
 
     async getRandomUsers(userId, count) {
         try {
-            const whoToFollow = await User.find({
-                _id: { $ne: userId },
-                followers: { $nin: userId }
-            });
+            const whoToFollow = await User.aggregate([
+                {
+                    $match: {
+                        _id: { $ne: mongoose.Types.ObjectId(userId) },
+                        followers: { $ne: mongoose.Types.ObjectId(userId) }
+                    }
+                }, {
+                    $sample: {
+                        size: 3
+                    }
+                }
+            ]);
             
             if(whoToFollow) return whoToFollow;
             else return ({ error: 'Nobody was found.' });
