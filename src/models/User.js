@@ -38,12 +38,12 @@ const UserSchema = new mongoose.Schema({
     avatar: {
         type: String,
         require: false,
-        default: 'https://bubex-twitter-backend.herokuapp.com/images/default-user.png'
+        default: `${process.env.APP_URL}/images/default-avatar.png`
     },
     cover: {
         type: String,
         require: false,
-        default: 'https://bubex-twitter-backend.herokuapp.com/images/default-cover.jpg'
+        default: `${process.env.APP_URL}/images/default-cover.jpg`
     },
     following: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -67,15 +67,11 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function(next) {
     const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
-    next();
-});
 
-// VALIDATING IMAGE URL ON SELECT
-UserSchema.post(/^find/, async function(next) {
-    const avatar = isImageUrl(this.avatar) ? this.avatar : `${process.env.APP_URL}images/default-avatar.png`;
-    const cover = isImageUrl(this.cover) ? this.cover : `${process.env.APP_URL}images/default-cover.jpg`;
-    this.avatar = avatar;
-    this.cover = cover;
+    this.avatar = await isImageUrl(this.avatar) ? this.avatar : `${process.env.APP_URL}/images/default-avatar.png`;
+    this.cover = await isImageUrl(this.cover) ? this.cover : `${process.env.APP_URL}/images/default-cover.jpg`;
+
+    next();
 });
 
 module.exports = mongoose.model('User', UserSchema);

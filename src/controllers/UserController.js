@@ -1,51 +1,11 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
-const authConfig = require('../config/auth');
-
 const User = require('../models/User');
 const { findMe, findConnections, sendMessage } = require('../websocket'); 
-
-function generateToken(params = {}) {
-    return jwt.sign( params, authConfig.secret, {
-        expiresIn: authConfig.expiresIn,
-    });
-}
-
-function sort(a, b) {
-    if (a.createdAt < b.createdAt) return 1;
-    else if (a.createdAt > b.createdAt) return -1;
-    else return 0;
-}
-
-async function getProfile(username) {
-    try {
-        const profile = await User.findOne({ username })
-            .populate({ path: 'posts', options: { sort: { 'createdAt': 'desc' }}})
-            .populate({ path: 'following', select: 'name username avatar bio createdAt', options: { sort: { 'name' : 'asc' }}})
-            .populate({ path: 'followers', select: 'name username avatar bio createdAt', options: { sort: { 'name' : 'asc' }}});
-        
-        if(profile) return profile;
-        else return ({ error: 'User not found.' });
-    } catch (err) {
-        return ({ error: 'We are unable to access this profile at this time, please try again.' }); 
-    }
-}
-
-async function getMe(id) {
-    try {
-        const user = await User.findById(id);
-
-        if(user) return user;
-        else return ({ error: 'User not found.' });
-    } catch (err) {
-        return ({ error: 'Failed to load data. Try again.'});
-    }
-}
+const utils = require('./Utils');
 
 module.exports = {
     async index(req, res) {
-        const me = await getMe(req.userId);
+        const me = await utils.getMe(req.userId);
         res.json(me);
     },
 
@@ -71,7 +31,7 @@ module.exports = {
                 
                 return res.json({
                     user,
-                    token: generateToken({ id: user._id })
+                    token: utils.generateToken({ id: user._id })
                 });
             }
         } catch (err) {
@@ -97,9 +57,10 @@ module.exports = {
 
             return res.json({ 
                 user, 
-                token: generateToken({ id: user._id })
+                token: utils.generateToken({ id: user._id })
             });
         } catch (err) {
+            console.log(err)
             return res.json({ error: 'Failed to login. Try again.' });
         }
     },
@@ -111,7 +72,7 @@ module.exports = {
     },
 
     async profile(req, res) {
-        const profile = await getProfile(req.params.username);
+        const profile = await utils.getProfile(req.params.username);
         res.json(profile);
     },
 
@@ -133,10 +94,10 @@ module.exports = {
             );
 
             const sendSocketMessageTo = findConnections(username);
-            sendMessage(sendSocketMessageTo, 'update-profile', await getProfile(username));
+            sendMessage(sendSocketMessageTo, 'update-profile', await utils.getProfile(username));
 
             const sendSocketMessageTo2 = findMe();
-            sendMessage(sendSocketMessageTo2, 'update-me', await getMe(user._id));
+            sendMessage(sendSocketMessageTo2, 'update-me', await utils.getMe(user._id));
 
             return res.json({ success: 'Now you are following him!'});
         } catch (err) {
@@ -163,10 +124,10 @@ module.exports = {
             );
 
             const sendSocketMessageTo = findConnections(username);
-            sendMessage(sendSocketMessageTo, 'update-profile', await getProfile(username));
+            sendMessage(sendSocketMessageTo, 'update-profile', await utils.getProfile(username));
 
             const sendSocketMessageTo2 = findMe();
-            sendMessage(sendSocketMessageTo2, 'update-me', await getMe(user._id));
+            sendMessage(sendSocketMessageTo2, 'update-me', await utils.getMe(user._id));
 
             return res.json({ success: 'You are not following him.'});
         } catch (err) {
@@ -175,48 +136,8 @@ module.exports = {
     },
 
     async timeline(req, res) {
-        try {
-            const { following } = await User.findById(req.userId)
-                .select('following')
-                .populate({ 
-                    path: 'following', 
-                    select: 'posts -_id',
-                    populate: {
-                        path: 'posts',
-                        select: 'text user createdAt',
-                        populate: {
-                            path: 'user',
-                            select: 'avatar name username -_id',
-                        }
-                    }
-                });
-
-            const { posts } = await User.findById(req.userId)
-                .select('posts')
-                .populate({
-                    path: 'posts', 
-                    select: 'text user createdAt',
-                    populate: {
-                        path: 'user',
-                        select: 'avatar name username -_id',
-                    }
-                });
-
-            let tweets = [];
-
-            following.map(f => {
-                f.posts.map(t => {
-                    tweets.push(t);
-                });
-            });
-
-            tweets = tweets.concat(posts);
-            tweets = tweets.sort(sort);
-
-            return res.json(tweets);
-        } catch (err) {
-            return res.json({ error: 'We are unable to load your timeline at this time, please try again.'});
-        }
+        const timeline = await utils.timeline(req.userId);
+        res.json(timeline);
     },
 
     async update(req, res) {
@@ -228,14 +149,20 @@ module.exports = {
             });
 
             const sendSocketMessageTo = findMe();
-            sendMessage(sendSocketMessageTo, 'update-me', await getMe(req.userId));
+            sendMessage(sendSocketMessageTo, 'update-me', await utils.getMe(req.userId));
 
             const sendSocketMessageTo2 = findConnections(me.username);
-            sendMessage(sendSocketMessageTo2, 'update-profile', await getProfile(me.username));
+            sendMessage(sendSocketMessageTo2, 'update-profile', await utils.getProfile(me.username));
     
             return res.json({ success: 'Your profile has been updated successfully!' });
         } catch (err) {
             return res.json({ error: 'Failed to save your profile. Try again.' });
         }
-    }
+    },
+
+    async whoToFollow(req, res) {
+        const { count } = req.body;
+        const users = await utils.getRandomUsers(req.userId, count);
+        res.json(users);
+    },
 };

@@ -14,12 +14,11 @@ const PostSchema = new mongoose.Schema({
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        unique: true,
     }],
-    retweets: {
+    retweets: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    },
+    }],
     replies: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post',

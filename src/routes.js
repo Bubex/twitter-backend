@@ -25,6 +25,7 @@ routes.use(authMiddleware.main);
     routes.get('/index', UserController.index);
 // ---------- Dashboard
     routes.get('/timeline', UserController.timeline);
+    routes.post('/who-to-follow', UserController.whoToFollow);
 // ---------- Upload Profile
     routes.post('/update', UserController.update);
     routes.post('/pictures/upload', upload.single('file'), UserController.sendImage);
@@ -35,7 +36,7 @@ routes.use(authMiddleware.main);
 // ---------- List, Create and Delete Tweets
     routes.get('/posts', PostController.list);
     routes.post('/post', PostController.create);
-    routes.delete('/post', PostController.delete);
+    routes.post('/post/delete', PostController.delete);
 
 // EXPORTING ROUTES
 module.exports = routes;
